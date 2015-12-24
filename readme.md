@@ -5,7 +5,7 @@
 ### Installation
 
 ````
-go get github.com/essentialkaos/z7
+go get pkg.re/essentialkaos/z7.v1
 ````
 
 ### License
