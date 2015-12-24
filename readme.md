@@ -1,4 +1,4 @@
-### z7 [![GoDoc](https://godoc.org/github.com/essentialkaos/z7?status.svg)](https://godoc.org/github.com/essentialkaos/z7)
+### z7 [![GoDoc](https://godoc.org/pkg.re/essentialkaos/z7.v1?status.svg)](https://godoc.org/pkg.re/essentialkaos/z7.v1)
 
 `z7` provides methods for working with 7z archives (p7zip wrapper).
 
