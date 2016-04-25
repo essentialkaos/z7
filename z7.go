@@ -3,13 +3,14 @@ package z7
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                     Copyright (c) 2009-2015 Essential Kaos                         //
+//                     Copyright (c) 2009-2016 Essential Kaos                         //
 //      Essential Kaos Open Source License <http://essentialkaos.com/ekol?en>         //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -50,21 +51,21 @@ const (
 )
 
 const _TEST_OK_VALUE = "Everything is Ok"
+const _TEST_ERROR_VALUE = "ERRORS:"
 
 // Props contains properties for packing/unpacking data
 type Props struct {
-	Dir            string
-	File           string
-	FileList       string
-	Exclude        string
-	ExcludeFile    string
-	Compression    int
-	Output         string
-	Password       string
-	Threads        int
-	EncryptHeaders bool
-	Recurse        bool
-	WorkingDir     string
+	Dir         string
+	File        string
+	IncludeFile string
+	Exclude     string
+	ExcludeFile string
+	Compression int
+	OutputDir   string
+	Password    string
+	Threads     int
+	Recursive   bool
+	WorkingDir  string
 }
 
 // Info contains info about archive
@@ -107,7 +108,7 @@ func Add(arch interface{}, files ...string) (string, error) {
 
 // AddList add files as string slice
 func AddList(arch interface{}, files ...[]string) (string, error) {
-	props, err := procProps(arch)
+	props, err := processProps(arch, false)
 
 	if err != nil {
 		return "", err
@@ -142,22 +143,10 @@ func AddList(arch interface{}, files ...[]string) (string, error) {
 
 // Extract extract arhive
 func Extract(arch interface{}) (string, error) {
-	props, err := procProps(arch)
+	props, err := processProps(arch, true)
 
 	if err != nil {
 		return "", err
-	}
-
-	if !fsutil.IsExist(props.File) {
-		return "", errors.New("File " + props.File + " is not exist")
-	}
-
-	if !fsutil.IsReadable(props.File) {
-		return "", errors.New("File " + props.File + " is not readable")
-	}
-
-	if props.Output != "" && !fsutil.IsWritable(props.Output) {
-		return "", errors.New("Directory " + props.Output + " is not writable")
 	}
 
 	var (
@@ -184,18 +173,10 @@ func Extract(arch interface{}) (string, error) {
 
 // List return info about archive
 func List(arch interface{}) (*Info, error) {
-	props, err := procProps(arch)
+	props, err := processProps(arch, true)
 
 	if err != nil {
 		return &Info{}, err
-	}
-
-	if !fsutil.IsExist(props.File) {
-		return nil, errors.New("File " + props.File + " is not exist")
-	}
-
-	if !fsutil.IsReadable(props.File) {
-		return nil, errors.New("File " + props.File + " is not readable")
 	}
 
 	args := propsToArgs(props, _COMMAND_LIST)
@@ -208,42 +189,33 @@ func List(arch interface{}) (*Info, error) {
 	return parseInfoString(out), nil
 }
 
-// Test test archive
-func Test(arch interface{}) (string, bool) {
-	props, err := procProps(arch)
+// Check test archive
+func Check(arch interface{}) (bool, error) {
+	props, err := processProps(arch, true)
 
 	if err != nil {
-		return "", false
-	}
-
-	if !fsutil.IsExist(props.File) {
-		return "", false
-	}
-
-	if !fsutil.IsReadable(props.File) {
-		return "", false
+		return false, err
 	}
 
 	args := propsToArgs(props, _COMMAND_TEST)
 	out, err := execBinary(props.File, _COMMAND_TEST, args)
 
-	for _, line := range strings.Split(out, "\n") {
+	outData := strings.Split(out, "\n")
+
+	for i, line := range outData {
 		if line == _TEST_OK_VALUE {
-			return out, true
+			return true, nil
+		} else if line == _TEST_ERROR_VALUE {
+			return false, fmt.Errorf(outData[i+1])
 		}
 	}
 
-	return out, false
+	return false, fmt.Errorf("Unknown error")
 }
 
 // Delete remove files from archive
 func Delete(arch interface{}, files ...string) (string, error) {
-	return DeleteList(arch, files)
-}
-
-// DeleteList remove files provided as string slice from archive
-func DeleteList(arch interface{}, files ...[]string) (string, error) {
-	props, err := procProps(arch)
+	props, err := processProps(arch, true)
 
 	if err != nil {
 		return "", err
@@ -252,7 +224,7 @@ func DeleteList(arch interface{}, files ...[]string) (string, error) {
 	args := propsToArgs(props, _COMMAND_DELETE)
 
 	if len(files) != 0 {
-		args = append(args, files[0]...)
+		args = append(args, files...)
 	}
 
 	out, err := execBinary(props.File, _COMMAND_DELETE, args)
@@ -262,6 +234,7 @@ func DeleteList(arch interface{}, files ...[]string) (string, error) {
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+// execBinary exec 7zip binary
 func execBinary(arch string, command string, args []string) (string, error) {
 	var cmd = exec.Command(_BINARY)
 
@@ -274,19 +247,61 @@ func execBinary(arch string, command string, args []string) (string, error) {
 	return string(out[:]), err
 }
 
-func procProps(p interface{}) (*Props, error) {
+// processProps parse properties and return props struct
+func processProps(p interface{}, checkFile bool) (*Props, error) {
+	var props *Props
+
 	switch p.(type) {
 	case *Props:
-		return p.(*Props), nil
+		props = p.(*Props)
 	case string:
-		return &Props{File: p.(string), Compression: _COMPRESSION_DEFAULT}, nil
+		props = &Props{File: p.(string), Compression: _COMPRESSION_DEFAULT}
 	default:
-		return nil, errors.New("Unknown properties type")
+		return nil, fmt.Errorf("Unknown properties type")
 	}
+
+	if checkFile {
+		if !fsutil.IsExist(props.File) {
+			return nil, fmt.Errorf("File %s is not exist", props.File)
+		}
+
+		if !fsutil.IsReadable(props.File) {
+			return nil, fmt.Errorf("File %s is not readable", props.File)
+		}
+	}
+
+	if props.IncludeFile != "" {
+		if !fsutil.IsExist(props.IncludeFile) {
+			return nil, fmt.Errorf("Include file %s is not exist", props.IncludeFile)
+		}
+
+		if !fsutil.IsReadable(props.IncludeFile) {
+			return nil, fmt.Errorf("Include file %s is not readable", props.IncludeFile)
+		}
+	}
+
+	if props.ExcludeFile != "" {
+		if !fsutil.IsExist(props.ExcludeFile) {
+			return nil, fmt.Errorf("Include file %s is not exist", props.ExcludeFile)
+		}
+
+		if !fsutil.IsReadable(props.ExcludeFile) {
+			return nil, fmt.Errorf("Include file %s is not readable", props.ExcludeFile)
+		}
+	}
+
+	if props.OutputDir != "" {
+		if !fsutil.IsWritable(props.OutputDir) {
+			return nil, fmt.Errorf("Directory %s is not writable", props.OutputDir)
+		}
+	}
+
+	return props, nil
 }
 
+// propsToArgs convert props struct to p7zip arguments
 func propsToArgs(props *Props, command string) []string {
-	var args = []string{"", "-y"}
+	var args = []string{"", "-y", "-bd"}
 
 	if command == _COMMAND_ADD {
 		compLvl := strconv.Itoa(mathutil.Between(props.Compression, _COMPRESSION_MIN, _COMPRESSION_MAX))
@@ -294,29 +309,25 @@ func propsToArgs(props *Props, command string) []string {
 		args = append(args, "-mx="+compLvl)
 
 		switch {
-		case props.Threads == -1:
-			args = append(args, "-mt=off")
-		case props.Threads > 0:
-			args = append(args, "-mt="+strconv.Itoa(mathutil.Between(props.Threads, 1, 128)))
-		}
-
-		if props.EncryptHeaders {
-			args = append(args, "-mhe")
+		case props.Threads < 1:
+			args = append(args, "-mmt=1")
+		case props.Threads >= 1:
+			args = append(args, "-mmt="+strconv.Itoa(mathutil.Between(props.Threads, 1, 128)))
 		}
 
 		if props.Exclude != "" {
 			args = append(args, "-x"+props.Exclude)
 		} else if props.ExcludeFile != "" {
-			args = append(args, "-x@"+props.ExcludeFile)
+			args = append(args, "-xr@"+props.ExcludeFile)
 		}
 
-		if props.FileList != "" {
-			args = append(args, "-i@"+props.FileList)
+		if props.IncludeFile != "" {
+			args = append(args, "-ir@"+props.IncludeFile)
 		}
 
 	} else if command == _COMMAND_EXTRACT {
-		if props.Output != "" {
-			args = append(args, "-o"+props.Output)
+		if props.OutputDir != "" {
+			args = append(args, "-o"+props.OutputDir)
 		}
 	} else if command == _COMMAND_LIST {
 		args = append(args, "-slt")
@@ -326,7 +337,7 @@ func propsToArgs(props *Props, command string) []string {
 		args = append(args, "-p"+props.Password)
 	}
 
-	if props.Recurse {
+	if props.Recursive {
 		args = append(args, "-r")
 	}
 
@@ -337,102 +348,80 @@ func propsToArgs(props *Props, command string) []string {
 	return args
 }
 
+// parseInfoString process raw info data
 func parseInfoString(infoData string) *Info {
 	var data = strings.Split(infoData, "\n")
 	var info = &Info{}
 
-	var fStart, fCount, fRecs int
-	var rList map[string]string
+	header, headerEnd := extractInfoHeader(data)
+	headerData := parseRecordData(header)
 
-	info.Path = getValue(data[7])
-	info.Type = getValue(data[8])
+	info.Path = headerData["Path"]
+	info.Type = headerData["Type"]
+	info.Method = strings.Split(headerData["Method"], " ")
 
 	if info.Type == _TYPE_7Z {
-		fStart = 16
-		fRecs = 10
+		info.Solid = headerData["Solid"] == "+"
 
-		rList = parseRecordList(data[7:15])
-
-		info.Method = strings.Split(rList["Method"], " ")
-		info.Solid = rList["Solid"] == "+"
-
-		info.Blocks, _ = strconv.Atoi(rList["Blocks"])
-		info.PhysicalSize, _ = strconv.Atoi(rList["Physical Size"])
-		info.HeadersSize, _ = strconv.Atoi(rList["Headers Size"])
-	} else if info.Type == _TYPE_ZIP {
-		fStart = 12
-		fRecs = 14
-
-		rList = parseRecordList(data[7:11])
-
-		info.PhysicalSize, _ = strconv.Atoi(rList["Physical Size"])
-	} else if info.Type == _TYPE_GZIP {
-		fStart = 11
-		fRecs = 7
-	} else if info.Type == _TYPE_XZ {
-		fStart = 12
-		fRecs = 4
-
-		rList = parseRecordList(data[7:11])
-
-		info.Method = strings.Split(rList["Method"], " ")
-	} else if info.Type == _TYPE_BZIP {
-		fStart = 11
-		fRecs = 2
-	} else {
-		return info
+		info.Blocks, _ = strconv.Atoi(headerData["Blocks"])
+		info.PhysicalSize, _ = strconv.Atoi(headerData["Physical Size"])
+		info.HeadersSize, _ = strconv.Atoi(headerData["Headers Size"])
 	}
 
-	fCount = (len(data) - fStart - 1) / fRecs
+	recStart := 0
+	records := data[headerEnd : len(data)-1]
 
-	for i := 0; i < fCount; i++ {
-		start := (i * fRecs) + fStart
-		end := start + fRecs
-
-		info.Files = append(info.Files, parseFileInfoString(data[start:end]))
+	for i, v := range records {
+		if v == "" {
+			info.Files = append(info.Files, parseFileInfo(records[recStart:i]))
+			recStart = i + 1
+		}
 	}
 
 	return info
 }
 
-func parseFileInfoString(data []string) *FileInfo {
+// parseFileInfo process raw info about file/directory
+func parseFileInfo(data []string) *FileInfo {
 	var info = &FileInfo{}
-	var rList = parseRecordList(data)
+	var recordData = parseRecordData(data)
 
-	crc, _ := strconv.ParseInt(rList["CRC"], 16, 0)
+	crc, _ := strconv.ParseInt(recordData["CRC"], 16, 0)
 
-	info.Path = rList["Path"]
-	info.Folder = rList["Folder"]
-	info.Size, _ = strconv.Atoi(rList["Size"])
-	info.PackedSize, _ = strconv.Atoi(rList["Packed Size"])
-	info.Modified = parseDateString(rList["Modified"])
-	info.Created = parseDateString(rList["Created"])
-	info.Accessed = parseDateString(rList["Accessed"])
-	info.Attributes = rList["Attributes"]
+	info.Path = recordData["Path"]
+	info.Folder = recordData["Folder"]
+	info.Size, _ = strconv.Atoi(recordData["Size"])
+	info.PackedSize, _ = strconv.Atoi(recordData["Packed Size"])
+	info.Modified = parseDateString(recordData["Modified"])
+	info.Created = parseDateString(recordData["Created"])
+	info.Accessed = parseDateString(recordData["Accessed"])
+	info.Attributes = recordData["Attributes"]
 	info.CRC = int(crc)
-	info.Comment = rList["Comment"]
-	info.Encrypted = rList["Encrypted"] == "+"
-	info.Method = strings.Split(rList["Method"], " ")
-	info.Block, _ = strconv.Atoi(rList["Block"])
-	info.HostOS = rList["Host OS"]
-	info.Version, _ = strconv.Atoi(rList["Version"])
+	info.Comment = recordData["Comment"]
+	info.Encrypted = recordData["Encrypted"] == "+"
+	info.Method = strings.Split(recordData["Method"], " ")
+	info.Block, _ = strconv.Atoi(recordData["Block"])
+	info.HostOS = recordData["Host OS"]
+	info.Version, _ = strconv.Atoi(recordData["Version"])
 
 	return info
 }
 
-func parseRecordList(data []string) map[string]string {
+// parseRecordData parse raw record
+func parseRecordData(data []string) map[string]string {
 	var result = make(map[string]string)
 
 	for _, rec := range data {
 		if rec != "" {
-			revVal := strings.Split(rec, " = ")
-			result[revVal[0]] = revVal[1]
+			name, val := parseValue(rec)
+			result[name] = val
 		}
 	}
 
 	return result
 }
 
+// parseDateString parse date string
 func parseDateString(data string) time.Time {
 	if data == "" {
 		return time.Time{}
@@ -448,6 +437,35 @@ func parseDateString(data string) time.Time {
 	return time.Date(year, time.Month(month), day, hour, min, sec, 0, time.UTC)
 }
 
-func getValue(s string) string {
-	return strings.Split(s, " = ")[1]
+// extractInfoHeader extract header from raw info data
+func extractInfoHeader(data []string) ([]string, int) {
+	var start int
+	var end int
+
+	for i, v := range data {
+		if v == "--" {
+			start = i + 1
+		}
+
+		switch v {
+		case "--":
+			start = i + 1
+		case "----------":
+			end = i - 1
+			break
+		}
+	}
+
+	return data[start:end], end + 2
+}
+
+// parseValue parse "name = value" string
+func parseValue(s string) (string, string) {
+	valSlice := strings.Split(s, " = ")
+
+	if len(valSlice) == 2 {
+		return valSlice[0], valSlice[1]
+	}
+
+	return "", ""
 }
