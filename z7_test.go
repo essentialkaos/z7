@@ -36,7 +36,7 @@ func (s *Z7Suite) TestListing7zNoComp(c *check.C) {
 	c.Assert(info, check.NotNil)
 
 	c.Assert(info.Path, check.Equals, "testdata/test-no-compression.7z")
-	c.Assert(info.Type, check.Equals, _TYPE_7Z)
+	c.Assert(info.Type, check.Equals, TYPE_7Z)
 	c.Assert(info.Method, check.DeepEquals, []string{"Copy"})
 	c.Assert(info.Solid, check.Equals, false)
 	c.Assert(info.Blocks, check.Equals, 3)
@@ -149,7 +149,7 @@ func (s *Z7Suite) TestListing7zMaxComp(c *check.C) {
 	c.Assert(info, check.NotNil)
 
 	c.Assert(info.Path, check.Equals, "testdata/test-max-compression.7z")
-	c.Assert(info.Type, check.Equals, _TYPE_7Z)
+	c.Assert(info.Type, check.Equals, TYPE_7Z)
 	c.Assert(info.Method, check.DeepEquals, []string{"LZMA2:12"})
 	c.Assert(info.Solid, check.Equals, true)
 	c.Assert(info.Blocks, check.Equals, 1)
@@ -262,7 +262,7 @@ func (s *Z7Suite) TestListingZip(c *check.C) {
 	c.Assert(info, check.NotNil)
 
 	c.Assert(info.Path, check.Equals, "testdata/test.zip")
-	c.Assert(info.Type, check.Equals, _TYPE_ZIP)
+	c.Assert(info.Type, check.Equals, TYPE_ZIP)
 	c.Assert(info.Method, check.DeepEquals, []string{""})
 	c.Assert(info.Solid, check.Equals, false)
 	c.Assert(info.Blocks, check.Equals, 0)
@@ -375,7 +375,7 @@ func (s *Z7Suite) TestListingGz(c *check.C) {
 	c.Assert(info, check.NotNil)
 
 	c.Assert(info.Path, check.Equals, "testdata/test.tar.gz")
-	c.Assert(info.Type, check.Equals, _TYPE_GZIP)
+	c.Assert(info.Type, check.Equals, TYPE_GZIP)
 	c.Assert(info.Method, check.DeepEquals, []string{""})
 	c.Assert(info.Solid, check.Equals, false)
 	c.Assert(info.Blocks, check.Equals, 0)
@@ -408,7 +408,7 @@ func (s *Z7Suite) TestListingBz(c *check.C) {
 	c.Assert(info, check.NotNil)
 
 	c.Assert(info.Path, check.Equals, "testdata/test.tar.bz2")
-	c.Assert(info.Type, check.Equals, _TYPE_BZIP)
+	c.Assert(info.Type, check.Equals, TYPE_BZIP)
 	c.Assert(info.Method, check.DeepEquals, []string{""})
 	c.Assert(info.Solid, check.Equals, false)
 	c.Assert(info.Blocks, check.Equals, 0)
@@ -441,7 +441,7 @@ func (s *Z7Suite) TestListingXz(c *check.C) {
 	c.Assert(info, check.NotNil)
 
 	c.Assert(info.Path, check.Equals, "testdata/test.tar.xz")
-	c.Assert(info.Type, check.Equals, _TYPE_XZ)
+	c.Assert(info.Type, check.Equals, TYPE_XZ)
 	c.Assert(info.Method, check.DeepEquals, []string{"LZMA2:26", "CRC64"})
 	c.Assert(info.Solid, check.Equals, false)
 	c.Assert(info.Blocks, check.Equals, 0)
