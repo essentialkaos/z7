@@ -24,6 +24,17 @@ import (
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+// List of supported formats
+const (
+	TYPE_7Z   = "7z"
+	TYPE_ZIP  = "zip"
+	TYPE_GZIP = "gzip"
+	TYPE_XZ   = "xz"
+	TYPE_BZIP = "bzip2"
+)
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
 const _BINARY = "7za"
 
 const (
@@ -42,16 +53,10 @@ const (
 	_COMMAND_EXTRACT   = "x"
 )
 
-const (
-	_TYPE_7Z   = "7z"
-	_TYPE_ZIP  = "zip"
-	_TYPE_GZIP = "gzip"
-	_TYPE_XZ   = "xz"
-	_TYPE_BZIP = "bzip2"
-)
-
 const _TEST_OK_VALUE = "Everything is Ok"
 const _TEST_ERROR_VALUE = "ERRORS:"
+
+// ////////////////////////////////////////////////////////////////////////////////// //
 
 // Props contains properties for packing/unpacking data
 type Props struct {
@@ -102,13 +107,13 @@ type FileInfo struct {
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 // Add add files to archive
-func Add(arch interface{}, files ...string) (string, error) {
-	return AddList(arch, files)
+func Add(properties interface{}, files ...string) (string, error) {
+	return AddList(properties, files)
 }
 
 // AddList add files as string slice
-func AddList(arch interface{}, files ...[]string) (string, error) {
-	props, err := processProps(arch, false)
+func AddList(properties interface{}, files ...[]string) (string, error) {
+	props, err := processProps(properties, false)
 
 	if err != nil {
 		return "", err
@@ -142,8 +147,8 @@ func AddList(arch interface{}, files ...[]string) (string, error) {
 }
 
 // Extract extract arhive
-func Extract(arch interface{}) (string, error) {
-	props, err := processProps(arch, true)
+func Extract(properties interface{}) (string, error) {
+	props, err := processProps(properties, true)
 
 	if err != nil {
 		return "", err
@@ -172,8 +177,8 @@ func Extract(arch interface{}) (string, error) {
 }
 
 // List return info about archive
-func List(arch interface{}) (*Info, error) {
-	props, err := processProps(arch, true)
+func List(properties interface{}) (*Info, error) {
+	props, err := processProps(properties, true)
 
 	if err != nil {
 		return &Info{}, err
@@ -190,8 +195,8 @@ func List(arch interface{}) (*Info, error) {
 }
 
 // Check test archive
-func Check(arch interface{}) (bool, error) {
-	props, err := processProps(arch, true)
+func Check(properties interface{}) (bool, error) {
+	props, err := processProps(properties, true)
 
 	if err != nil {
 		return false, err
@@ -214,8 +219,8 @@ func Check(arch interface{}) (bool, error) {
 }
 
 // Delete remove files from archive
-func Delete(arch interface{}, files ...string) (string, error) {
-	props, err := processProps(arch, true)
+func Delete(properties interface{}, files ...string) (string, error) {
+	props, err := processProps(properties, true)
 
 	if err != nil {
 		return "", err
@@ -235,11 +240,11 @@ func Delete(arch interface{}, files ...string) (string, error) {
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 // execBinary exec 7zip binary
-func execBinary(arch string, command string, args []string) (string, error) {
+func execBinary(target string, command string, args []string) (string, error) {
 	var cmd = exec.Command(_BINARY)
 
 	cmd.Args = append(cmd.Args, command)
-	cmd.Args = append(cmd.Args, arch)
+	cmd.Args = append(cmd.Args, target)
 	cmd.Args = append(cmd.Args, args...)
 
 	out, err := cmd.Output()
@@ -248,14 +253,14 @@ func execBinary(arch string, command string, args []string) (string, error) {
 }
 
 // processProps parse properties and return props struct
-func processProps(p interface{}, checkFile bool) (*Props, error) {
+func processProps(properties interface{}, checkFile bool) (*Props, error) {
 	var props *Props
 
-	switch p.(type) {
+	switch properties.(type) {
 	case *Props:
-		props = p.(*Props)
+		props = properties.(*Props)
 	case string:
-		props = &Props{File: p.(string), Compression: _COMPRESSION_DEFAULT}
+		props = &Props{File: properties.(string), Compression: _COMPRESSION_DEFAULT}
 	default:
 		return nil, fmt.Errorf("Unknown properties type")
 	}
@@ -360,7 +365,7 @@ func parseInfoString(infoData string) *Info {
 	info.Type = headerData["Type"]
 	info.Method = strings.Split(headerData["Method"], " ")
 
-	if info.Type == _TYPE_7Z {
+	if info.Type == TYPE_7Z {
 		info.Solid = headerData["Solid"] == "+"
 
 		info.Blocks, _ = strconv.Atoi(headerData["Blocks"])
