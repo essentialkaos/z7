@@ -11,7 +11,6 @@ package z7
 import (
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -60,17 +59,18 @@ const _TEST_ERROR_VALUE = "ERRORS:"
 
 // Props contains properties for packing/unpacking data
 type Props struct {
-	Dir         string
-	File        string
-	IncludeFile string
-	Exclude     string
-	ExcludeFile string
-	Compression int
-	OutputDir   string
-	Password    string
-	Threads     int
-	Recursive   bool
-	WorkingDir  string
+	Dir         string // Directory with files (for relative paths)
+	File        string // Output file name
+	IncludeFile string // File with include filenames
+	Exclude     string // Exclude filenames
+	ExcludeFile string // File with exclude filenames
+	Compression int    // Compression level (0-9)
+	OutputDir   string // Output dir (for extract command)
+	Password    string // Password
+	Threads     int    // Number of CPU threads
+	Recursive   bool   // Recurse subdirectories
+	WorkingDir  string // Working dir
+	Delete      bool   // Delete files after compression
 }
 
 // Info contains info about archive
@@ -119,16 +119,14 @@ func AddList(properties interface{}, files ...[]string) (string, error) {
 		return "", err
 	}
 
-	var (
-		cwd  string
-		file string
-	)
+	file, err := filepath.Abs(props.File)
 
-	file, _ = filepath.Abs(props.File)
+	if err != nil {
+		return "", err
+	}
 
 	if props.Dir != "" {
-		cwd, _ = os.Getwd()
-		os.Chdir(props.Dir)
+		fsutil.Push(props.Dir)
 	}
 
 	args := propsToArgs(props, _COMMAND_ADD)
@@ -140,7 +138,7 @@ func AddList(properties interface{}, files ...[]string) (string, error) {
 	out, err := execBinary(file, _COMMAND_ADD, args)
 
 	if props.Dir != "" {
-		os.Chdir(cwd)
+		fsutil.Pop()
 	}
 
 	return out, err
@@ -154,24 +152,14 @@ func Extract(properties interface{}) (string, error) {
 		return "", err
 	}
 
-	var (
-		cwd  string
-		file string
-	)
+	file, err := filepath.Abs(props.File)
 
-	file, _ = filepath.Abs(props.File)
-
-	if props.Dir != "" {
-		cwd, _ = os.Getwd()
-		os.Chdir(props.Dir)
+	if err != nil {
+		return "", err
 	}
 
 	args := propsToArgs(props, _COMMAND_EXTRACT)
 	out, err := execBinary(file, _COMMAND_EXTRACT, args)
-
-	if props.Dir != "" {
-		os.Chdir(cwd)
-	}
 
 	return out, err
 }
