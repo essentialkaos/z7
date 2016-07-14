@@ -191,7 +191,7 @@ func Check(properties interface{}) (bool, error) {
 	}
 
 	args := propsToArgs(props, _COMMAND_TEST)
-	out, err := execBinary(props.File, _COMMAND_TEST, args)
+	out, _ := execBinary(props.File, _COMMAND_TEST, args)
 
 	outData := strings.Split(out, "\n")
 
