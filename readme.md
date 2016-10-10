@@ -5,7 +5,7 @@
 ### Installation
 
 ````
-go get pkg.re/essentialkaos/z7.v3
+go get pkg.re/essentialkaos/z7.v2
 ````
 
 ### `p7zip` compatibility
