@@ -8,7 +8,7 @@
 go get pkg.re/essentialkaos/z7.v3
 ````
 
-### `p7zip` compatibility
+### Compatibility
 
 |      Version |      1.x |    2.x+ |
 |--------------|----------|---------|
