@@ -3,8 +3,8 @@ package z7
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                     Copyright (c) 2009-2016 Essential Kaos                         //
-//      Essential Kaos Open Source License <http://essentialkaos.com/ekol?en>         //
+//                     Copyright (c) 2009-2017 ESSENTIAL KAOS                         //
+//        Essential Kaos Open Source License <https://essentialkaos.com/ekol>         //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
 
@@ -17,8 +17,8 @@ import (
 	"strings"
 	"time"
 
-	"pkg.re/essentialkaos/ek.v6/fsutil"
-	"pkg.re/essentialkaos/ek.v6/mathutil"
+	"pkg.re/essentialkaos/ek.v7/fsutil"
+	"pkg.re/essentialkaos/ek.v7/mathutil"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
