@@ -5,7 +5,7 @@
 ########################################################################################
 
 deps:
-	go get -v pkg.re/essentialkaos/ek.v6
+	go get -v pkg.re/essentialkaos/ek.v7
 
 fmt:
 	find . -name "*.go" -exec gofmt -s -w {} \;
