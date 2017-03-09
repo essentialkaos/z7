@@ -255,7 +255,7 @@ func processProps(properties interface{}, checkFile bool) (*Props, error) {
 
 	if checkFile {
 		if !fsutil.IsExist(props.File) {
-			return nil, fmt.Errorf("File %s is not exist", props.File)
+			return nil, fmt.Errorf("File %s does not exist", props.File)
 		}
 
 		if !fsutil.IsReadable(props.File) {
@@ -265,7 +265,7 @@ func processProps(properties interface{}, checkFile bool) (*Props, error) {
 
 	if props.IncludeFile != "" {
 		if !fsutil.IsExist(props.IncludeFile) {
-			return nil, fmt.Errorf("Include file %s is not exist", props.IncludeFile)
+			return nil, fmt.Errorf("Include file %s does not exist", props.IncludeFile)
 		}
 
 		if !fsutil.IsReadable(props.IncludeFile) {
@@ -275,7 +275,7 @@ func processProps(properties interface{}, checkFile bool) (*Props, error) {
 
 	if props.ExcludeFile != "" {
 		if !fsutil.IsExist(props.ExcludeFile) {
-			return nil, fmt.Errorf("Include file %s is not exist", props.ExcludeFile)
+			return nil, fmt.Errorf("Include file %s does not exist", props.ExcludeFile)
 		}
 
 		if !fsutil.IsReadable(props.ExcludeFile) {
