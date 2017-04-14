@@ -24,11 +24,11 @@ go get -u pkg.re/essentialkaos/z7.v4
 
 ## Compatibility
 
-|      Version |      1.x |    2.x+ |
-|--------------|----------|---------|
-|  `p7zip 9.x` |    Full  | Partial |
-| `p7zip 15.x` |  Partial |    Full |
-| `p7zip 16.x` |  Partial |    Full |
+|      Version |      1.x |    2.x  |    3.x  |    4.x  |
+|--------------|----------|---------|---------|---------|
+|  `p7zip 9.x` |    Full  | Partial | Partial | Partial |
+| `p7zip 15.x` |  Partial |    Full |    Full |    Full |
+| `p7zip 16.x` |  Partial |    Full |    Full |    Full |
 
 ## License
 
