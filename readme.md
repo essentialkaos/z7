@@ -16,6 +16,12 @@ Make sure you have a working Go 1.5+ workspace ([instructions](https://golang.or
 go get pkg.re/essentialkaos/z7.v4
 ```
 
+If you want to update `z7` to latest stable release, do:
+
+```
+go get -u pkg.re/essentialkaos/z7.v4
+```
+
 ## Compatibility
 
 |      Version |      1.x |    2.x+ |
