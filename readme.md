@@ -28,6 +28,7 @@ go get -u pkg.re/essentialkaos/z7.v4
 |--------------|----------|---------|
 |  `p7zip 9.x` |    Full  | Partial |
 | `p7zip 15.x` |  Partial |    Full |
+| `p7zip 16.x` |  Partial |    Full |
 
 ## License
 
