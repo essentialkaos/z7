@@ -10,7 +10,7 @@ package z7
 import (
 	"testing"
 
-	"pkg.re/essentialkaos/ek.v7/fsutil"
+	"pkg.re/essentialkaos/ek.v8/fsutil"
 
 	check "pkg.re/check.v1"
 )
