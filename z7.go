@@ -17,8 +17,8 @@ import (
 	"strings"
 	"time"
 
-	"pkg.re/essentialkaos/ek.v7/fsutil"
-	"pkg.re/essentialkaos/ek.v7/mathutil"
+	"pkg.re/essentialkaos/ek.v8/fsutil"
+	"pkg.re/essentialkaos/ek.v8/mathutil"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
