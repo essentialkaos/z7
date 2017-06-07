@@ -5,13 +5,13 @@ _Before opening an issue, search for similar bug reports or feature requests on 
 **System info:**
 
 * **Version used:** 
-* **OS (`cat /etc/*-release`):** 
+* **OS (e.g. from `/etc/*-release`):** 
 * **Kernel (`uname -a`):** 
 * **Go version (`go version`):** 
 * **p7zip version (`7za | head -3`):** 
 * **Install tools:** 
 
-**System info:**
+**Steps to reproduce:**
 
 1. [First Step]
 2. [Second Step]
