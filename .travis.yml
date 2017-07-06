@@ -28,6 +28,7 @@ addons:
 
 before_install:
   - make deps
+  - make deps-test
 
 script:
   - make test
