@@ -31,4 +31,5 @@ before_install:
   - make deps-test
 
 script:
+  - 7za | head -4
   - make test
