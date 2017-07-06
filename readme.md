@@ -2,7 +2,7 @@
 
 `z7` package provides methods for working with 7z archives (`p7zip` wrapper).
 
-## Installation
+### Installation
 
 Before the initial install allows git to use redirects for [pkg.re](https://github.com/essentialkaos/pkgre) service (reason why you should do this described [here](https://github.com/essentialkaos/pkgre#git-support)):
 
@@ -22,7 +22,7 @@ If you want to update `z7` to latest stable release, do:
 go get -u pkg.re/essentialkaos/z7.v6
 ```
 
-## Compatibility
+### Compatibility
 
 |      Version |      1.x |    2.x  | 3.x-6.x |
 |--------------|----------|---------|---------|
@@ -30,6 +30,8 @@ go get -u pkg.re/essentialkaos/z7.v6
 | `p7zip 15.x` |  Partial |    Full |    Full |
 | `p7zip 16.x` |  Partial | Partial |    Full |
 
-## License
+### License
 
 [EKOL](https://essentialkaos.com/ekol)
+
+<p align="center"><a href="https://essentialkaos.com"><img src="https://gh.kaos.io/ekgh.svg"/></a></p>
