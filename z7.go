@@ -3,7 +3,7 @@ package z7
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                     Copyright (c) 2009-2017 ESSENTIAL KAOS                         //
+//                     Copyright (c) 2009-2018 ESSENTIAL KAOS                         //
 //        Essential Kaos Open Source License <https://essentialkaos.com/ekol>         //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -12,7 +12,6 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -107,19 +106,17 @@ type FileInfo struct {
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 // Add add files to archive
-func Add(properties interface{}, files ...string) (string, error) {
-	return AddList(properties, files)
+func Add(props Props, files ...string) (string, error) {
+	return AddList(props, files)
 }
 
 // AddList add files as string slice
-func AddList(properties interface{}, files ...[]string) (string, error) {
-	props, err := processProps(properties, false)
-
-	if err != nil {
-		return "", err
+func AddList(props Props, files []string) (string, error) {
+	if len(files) == 0 {
+		return "", errors.New("You should define files to compress")
 	}
 
-	file, err := filepath.Abs(props.File)
+	err := props.Validate(false)
 
 	if err != nil {
 		return "", err
@@ -129,13 +126,7 @@ func AddList(properties interface{}, files ...[]string) (string, error) {
 		fsutil.Push(props.Dir)
 	}
 
-	args := propsToArgs(props, _COMMAND_ADD)
-
-	if len(files) != 0 {
-		args = append(args, files[0]...)
-	}
-
-	out, err := execBinary(file, _COMMAND_ADD, args)
+	out, err := execBinary(_COMMAND_ADD, props, files)
 
 	if props.Dir != "" {
 		fsutil.Pop()
@@ -145,200 +136,195 @@ func AddList(properties interface{}, files ...[]string) (string, error) {
 }
 
 // Extract extract arhive
-func Extract(properties interface{}) (string, error) {
-	props, err := processProps(properties, true)
+func Extract(props Props) (string, error) {
+	err := props.Validate(true)
 
 	if err != nil {
 		return "", err
 	}
 
-	file, err := filepath.Abs(props.File)
-
-	if err != nil {
-		return "", err
-	}
-
-	args := propsToArgs(props, _COMMAND_EXTRACT)
-	out, err := execBinary(file, _COMMAND_EXTRACT, args)
-
-	return out, err
+	return execBinary(_COMMAND_EXTRACT, props, nil)
 }
 
 // List return info about archive
-func List(properties interface{}) (*Info, error) {
-	props, err := processProps(properties, true)
+func List(props Props) (*Info, error) {
+	err := props.Validate(true)
 
 	if err != nil {
-		return &Info{}, err
+		return nil, err
 	}
 
-	args := propsToArgs(props, _COMMAND_LIST)
-	out, err := execBinary(props.File, _COMMAND_LIST, args)
+	out, err := execBinary(_COMMAND_LIST, props, nil)
 
 	if err != nil {
-		return nil, errors.New(out)
+		return nil, err
 	}
 
 	return parseInfoString(out), nil
 }
 
 // Check test archive
-func Check(properties interface{}) (bool, error) {
-	props, err := processProps(properties, true)
+func Check(props Props) (bool, error) {
+	err := props.Validate(true)
 
 	if err != nil {
 		return false, err
 	}
 
-	args := propsToArgs(props, _COMMAND_TEST)
-	out, _ := execBinary(props.File, _COMMAND_TEST, args)
+	out, err := execBinary(_COMMAND_TEST, props, nil)
+
+	if err != nil {
+		return false, err
+	}
 
 	outData := strings.Split(out, "\n")
 
-	for i, line := range outData {
+	for index, line := range outData {
 		if line == _TEST_OK_VALUE {
 			return true, nil
 		} else if line == _TEST_ERROR_VALUE {
-			return false, fmt.Errorf(outData[i+1])
+			return false, fmt.Errorf(outData[index+1])
 		}
 	}
 
-	return false, fmt.Errorf("Unknown error")
+	return false, errors.New("Can't parse p7zip output")
 }
 
 // Delete remove files from archive
-func Delete(properties interface{}, files ...string) (string, error) {
-	props, err := processProps(properties, true)
+func Delete(props Props, files ...string) (string, error) {
+	if len(files) == 0 {
+		return "", errors.New("You should define files to delete")
+	}
+
+	err := props.Validate(true)
 
 	if err != nil {
 		return "", err
 	}
 
-	args := propsToArgs(props, _COMMAND_DELETE)
-
-	if len(files) != 0 {
-		args = append(args, files...)
-	}
-
-	out, err := execBinary(props.File, _COMMAND_DELETE, args)
-
-	return out, err
+	return execBinary(_COMMAND_DELETE, props, files)
 }
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// execBinary exec 7zip binary
-func execBinary(target string, command string, args []string) (string, error) {
-	var cmd = exec.Command(_BINARY)
-
-	cmd.Args = append(cmd.Args, command)
-	cmd.Args = append(cmd.Args, target)
-	cmd.Args = append(cmd.Args, args...)
-
-	out, err := cmd.Output()
-
-	return string(out[:]), err
-}
-
-// processProps parse properties and return props struct
-func processProps(properties interface{}, checkFile bool) (*Props, error) {
-	var props *Props
-
-	switch properties.(type) {
-	case *Props:
-		props = properties.(*Props)
-	case string:
-		props = &Props{File: properties.(string), Compression: _COMPRESSION_DEFAULT}
-	default:
-		return nil, fmt.Errorf("Unknown properties type")
-	}
-
+// Validate validate properties values
+func (p Props) Validate(checkFile bool) error {
 	if checkFile {
-		if !fsutil.IsExist(props.File) {
-			return nil, fmt.Errorf("File %s does not exist", props.File)
+		if !fsutil.IsExist(p.File) {
+			return fmt.Errorf("File %s does not exist", p.File)
 		}
 
-		if !fsutil.IsReadable(props.File) {
-			return nil, fmt.Errorf("File %s is not readable", props.File)
-		}
-	}
-
-	if props.IncludeFile != "" {
-		if !fsutil.IsExist(props.IncludeFile) {
-			return nil, fmt.Errorf("Include file %s does not exist", props.IncludeFile)
-		}
-
-		if !fsutil.IsReadable(props.IncludeFile) {
-			return nil, fmt.Errorf("Include file %s is not readable", props.IncludeFile)
+		if !fsutil.IsReadable(p.File) {
+			return fmt.Errorf("File %s is not readable", p.File)
 		}
 	}
 
-	if props.ExcludeFile != "" {
-		if !fsutil.IsExist(props.ExcludeFile) {
-			return nil, fmt.Errorf("Include file %s does not exist", props.ExcludeFile)
+	if p.IncludeFile != "" {
+		if !fsutil.IsExist(p.IncludeFile) {
+			return fmt.Errorf("Included file %s does not exist", p.IncludeFile)
 		}
 
-		if !fsutil.IsReadable(props.ExcludeFile) {
-			return nil, fmt.Errorf("Include file %s is not readable", props.ExcludeFile)
-		}
-	}
-
-	if props.OutputDir != "" {
-		if !fsutil.IsWritable(props.OutputDir) {
-			return nil, fmt.Errorf("Directory %s is not writable", props.OutputDir)
+		if !fsutil.IsReadable(p.IncludeFile) {
+			return fmt.Errorf("Included file %s is not readable", p.IncludeFile)
 		}
 	}
 
-	return props, nil
+	if p.ExcludeFile != "" {
+		if !fsutil.IsExist(p.ExcludeFile) {
+			return fmt.Errorf("Included file %s does not exist", p.ExcludeFile)
+		}
+
+		if !fsutil.IsReadable(p.ExcludeFile) {
+			return fmt.Errorf("Included file %s is not readable", p.ExcludeFile)
+		}
+	}
+
+	if p.OutputDir != "" {
+		if !fsutil.IsWritable(p.OutputDir) {
+			return fmt.Errorf("Directory %s is not writable", p.OutputDir)
+		}
+	}
+
+	return nil
 }
 
-// propsToArgs convert props struct to p7zip arguments
-func propsToArgs(props *Props, command string) []string {
-	var args = []string{"", "-y", "-bd"}
+// ToArgs convert properties to p7zip arguments
+func (p Props) ToArgs(command string) []string {
+	var args = []string{p.File, "", "-y", "-bd"}
 
 	if command == _COMMAND_ADD {
-		compLvl := strconv.Itoa(mathutil.Between(props.Compression, _COMPRESSION_MIN, _COMPRESSION_MAX))
+		var compression int
 
-		args = append(args, "-mx="+compLvl)
+		if p.Compression == 0 {
+			compression = _COMPRESSION_DEFAULT
+		} else {
+			compression = mathutil.Between(p.Compression, _COMPRESSION_MIN, _COMPRESSION_MAX)
+		}
+
+		args = append(args, "-mx="+strconv.Itoa(compression))
 
 		switch {
-		case props.Threads < 1:
+		case p.Threads < 1:
 			args = append(args, "-mmt=1")
-		case props.Threads >= 1:
-			args = append(args, "-mmt="+strconv.Itoa(mathutil.Between(props.Threads, 1, 128)))
+		case p.Threads >= 1:
+			args = append(args, "-mmt="+strconv.Itoa(mathutil.Between(p.Threads, 1, 128)))
 		}
 
-		if props.Exclude != "" {
-			args = append(args, "-x"+props.Exclude)
-		} else if props.ExcludeFile != "" {
-			args = append(args, "-xr@"+props.ExcludeFile)
+		if p.Exclude != "" {
+			args = append(args, "-x"+p.Exclude)
+		} else if p.ExcludeFile != "" {
+			args = append(args, "-xr@"+p.ExcludeFile)
 		}
 
-		if props.IncludeFile != "" {
-			args = append(args, "-ir@"+props.IncludeFile)
+		if p.IncludeFile != "" {
+			args = append(args, "-ir@"+p.IncludeFile)
 		}
 
 	} else if command == _COMMAND_EXTRACT {
-		if props.OutputDir != "" {
-			args = append(args, "-o"+props.OutputDir)
+		if p.OutputDir != "" {
+			args = append(args, "-o"+p.OutputDir)
 		}
 	} else if command == _COMMAND_LIST {
 		args = append(args, "-slt")
 	}
 
-	if props.Password != "" {
-		args = append(args, "-p"+props.Password)
+	if p.Password != "" {
+		args = append(args, "-p"+p.Password)
 	}
 
-	if props.Recursive {
+	if p.Recursive {
 		args = append(args, "-r")
 	}
 
-	if props.WorkingDir != "" {
-		args = append(args, "-w"+props.WorkingDir)
+	if p.WorkingDir != "" {
+		args = append(args, "-w"+p.WorkingDir)
 	}
 
 	return args
+}
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
+// execBinary exec 7zip binary
+func execBinary(command string, props Props, files []string) (string, error) {
+	args := props.ToArgs(command)
+
+	if len(files) != 0 {
+		args = append(args, files...)
+	}
+
+	cmd := exec.Command(_BINARY)
+
+	cmd.Args = append(cmd.Args, command)
+	cmd.Args = append(cmd.Args, args...)
+
+	out, err := cmd.Output()
+
+	if err != nil {
+		return string(out[:]), errors.New(string(out[:]))
+	}
+
+	return string(out[:]), nil
 }
 
 // parseInfoString process raw info data

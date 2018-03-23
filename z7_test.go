@@ -2,7 +2,7 @@ package z7
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                     Copyright (c) 2009-2017 ESSENTIAL KAOS                         //
+//                     Copyright (c) 2009-2018 ESSENTIAL KAOS                         //
 //        Essential Kaos Open Source License <https://essentialkaos.com/ekol>         //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -30,7 +30,7 @@ var _ = check.Suite(&Z7Suite{})
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 func (s *Z7Suite) TestListing7zNoComp(c *check.C) {
-	info, err := List("testdata/test-no-compression.7z")
+	info, err := List(Props{File: "testdata/test-no-compression.7z"})
 
 	c.Assert(err, check.IsNil)
 	c.Assert(info, check.NotNil)
@@ -143,7 +143,7 @@ func (s *Z7Suite) TestListing7zNoComp(c *check.C) {
 }
 
 func (s *Z7Suite) TestListing7zMaxComp(c *check.C) {
-	info, err := List("testdata/test-max-compression.7z")
+	info, err := List(Props{File: "testdata/test-max-compression.7z"})
 
 	c.Assert(err, check.IsNil)
 	c.Assert(info, check.NotNil)
@@ -256,7 +256,7 @@ func (s *Z7Suite) TestListing7zMaxComp(c *check.C) {
 }
 
 func (s *Z7Suite) TestListingZip(c *check.C) {
-	info, err := List("testdata/test.zip")
+	info, err := List(Props{File: "testdata/test.zip"})
 
 	c.Assert(err, check.IsNil)
 	c.Assert(info, check.NotNil)
@@ -369,7 +369,7 @@ func (s *Z7Suite) TestListingZip(c *check.C) {
 }
 
 func (s *Z7Suite) TestListingGz(c *check.C) {
-	info, err := List("testdata/test.tar.gz")
+	info, err := List(Props{File: "testdata/test.tar.gz"})
 
 	c.Assert(err, check.IsNil)
 	c.Assert(info, check.NotNil)
@@ -402,7 +402,7 @@ func (s *Z7Suite) TestListingGz(c *check.C) {
 }
 
 func (s *Z7Suite) TestListingBz(c *check.C) {
-	info, err := List("testdata/test.tar.bz2")
+	info, err := List(Props{File: "testdata/test.tar.bz2"})
 
 	c.Assert(err, check.IsNil)
 	c.Assert(info, check.NotNil)
@@ -435,7 +435,7 @@ func (s *Z7Suite) TestListingBz(c *check.C) {
 }
 
 func (s *Z7Suite) TestListingXz(c *check.C) {
-	info, err := List("testdata/test.tar.xz")
+	info, err := List(Props{File: "testdata/test.tar.xz"})
 
 	c.Assert(err, check.IsNil)
 	c.Assert(info, check.NotNil)
@@ -468,17 +468,17 @@ func (s *Z7Suite) TestListingXz(c *check.C) {
 }
 
 func (s *Z7Suite) TestCheck(c *check.C) {
-	ok, err := Check("testdata/test-max-compression.7z")
+	ok, err := Check(Props{File: "testdata/test-max-compression.7z"})
 
 	c.Assert(ok, check.Equals, true)
 	c.Assert(err, check.IsNil)
 
-	ok, err = Check("testdata/test-broken.7z")
+	ok, err = Check(Props{File: "testdata/test-broken.7z"})
 
 	c.Assert(ok, check.Equals, false)
 	c.Assert(err, check.NotNil)
 
-	ok, err = Check("testdata/test-not-exist.7z")
+	ok, err = Check(Props{File: "testdata/test-not-exist.7z"})
 
 	c.Assert(ok, check.Equals, false)
 	c.Assert(err, check.NotNil)
@@ -487,7 +487,7 @@ func (s *Z7Suite) TestCheck(c *check.C) {
 func (s *Z7Suite) TestAdd(c *check.C) {
 	resultFile := c.MkDir() + "/test.7z"
 
-	_, err := Add(&Props{File: resultFile}, "testdata/test")
+	_, err := Add(Props{File: resultFile}, "testdata/test")
 
 	c.Assert(err, check.IsNil)
 
@@ -495,14 +495,14 @@ func (s *Z7Suite) TestAdd(c *check.C) {
 	c.Assert(fsutil.IsReadable(resultFile), check.Equals, true)
 	c.Assert(fsutil.IsNonEmpty(resultFile), check.Equals, true)
 
-	ok, err := Check(resultFile)
+	ok, err := Check(Props{File: resultFile})
 
 	c.Assert(ok, check.Equals, true)
 	c.Assert(err, check.IsNil)
 
 	resultFile = c.MkDir() + "/test1.7z"
 
-	_, err = Add(resultFile, "testdata/test")
+	_, err = Add(Props{File: resultFile}, "testdata/test")
 
 	c.Assert(err, check.IsNil)
 
@@ -510,7 +510,7 @@ func (s *Z7Suite) TestAdd(c *check.C) {
 	c.Assert(fsutil.IsReadable(resultFile), check.Equals, true)
 	c.Assert(fsutil.IsNonEmpty(resultFile), check.Equals, true)
 
-	ok, err = Check(resultFile)
+	ok, err = Check(Props{File: resultFile})
 
 	c.Assert(ok, check.Equals, true)
 	c.Assert(err, check.IsNil)
@@ -520,7 +520,7 @@ func (s *Z7Suite) TestExtract(c *check.C) {
 	outputDir := c.MkDir()
 
 	_, err := Extract(
-		&Props{
+		Props{
 			File:      "testdata/test-max-compression.7z",
 			OutputDir: outputDir,
 		},
@@ -541,14 +541,14 @@ func (s *Z7Suite) TestDelete(c *check.C) {
 
 	fsutil.CopyFile("testdata/test-max-compression.7z", testArchive)
 
-	_, err := Delete(testArchive, "test/file2.log", "test/file3.log")
+	_, err := Delete(Props{File: testArchive}, "test/file2.log", "test/file3.log")
 
 	c.Assert(err, check.IsNil)
 
 	outputDir := c.MkDir()
 
 	_, err = Extract(
-		&Props{
+		Props{
 			File:      testArchive,
 			OutputDir: outputDir,
 		},
