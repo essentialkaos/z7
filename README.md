@@ -1,4 +1,4 @@
-# z7 [![GoDoc](https://godoc.org/pkg.re/essentialkaos/z7.v6?status.svg)](https://godoc.org/pkg.re/essentialkaos/z7.v6) [![Go Report Card](https://goreportcard.com/badge/essentialkaos/z7)](https://goreportcard.com/report/essentialkaos/z7) [![codebeat badge](https://codebeat.co/badges/7d5b1210-a853-4d1d-a34a-4afcf574861e)](https://codebeat.co/projects/github-com-essentialkaos-z7) [![License](https://gh.kaos.st/ekol.svg)](https://essentialkaos.com/ekol)
+# z7 [![GoDoc](https://godoc.org/pkg.re/essentialkaos/z7.v7?status.svg)](https://godoc.org/pkg.re/essentialkaos/z7.v7) [![Go Report Card](https://goreportcard.com/badge/essentialkaos/z7)](https://goreportcard.com/report/essentialkaos/z7) [![codebeat badge](https://codebeat.co/badges/7d5b1210-a853-4d1d-a34a-4afcf574861e)](https://codebeat.co/projects/github-com-essentialkaos-z7) [![License](https://gh.kaos.st/ekol.svg)](https://essentialkaos.com/ekol)
 
 `z7` package provides methods for working with 7z archives (`p7zip` wrapper).
 
