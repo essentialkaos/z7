@@ -1,4 +1,4 @@
-<p align="center"><a href="#readme"><img src="https://gh.kaos.st/z7.svg"/></a></p>
+<p align="center"><a href="#readme"><img src="https://gh.kaos.st/go-z7.svg"/></a></p>
 
 <p align="center"><a href="#installation">Installation</a> • <a href="#compatibility-and-os-support">Compatibility and OS support</a> • <a href="#license">License</a></p>
 
