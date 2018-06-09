@@ -1,4 +1,13 @@
-# z7 [![GoDoc](https://godoc.org/pkg.re/essentialkaos/z7.v7?status.svg)](https://godoc.org/pkg.re/essentialkaos/z7.v7) [![Go Report Card](https://goreportcard.com/badge/essentialkaos/z7)](https://goreportcard.com/report/essentialkaos/z7) [![codebeat badge](https://codebeat.co/badges/7d5b1210-a853-4d1d-a34a-4afcf574861e)](https://codebeat.co/projects/github-com-essentialkaos-z7) [![License](https://gh.kaos.st/ekol.svg)](https://essentialkaos.com/ekol)
+<p align="center"><a href="#readme"><img src="https://gh.kaos.st/z7.svg"/></a></p>
+
+<p align="center"><a href="#installation">Installation</a> • <a href="#compatibility-and-os-support">Compatibility and OS support</a> • <a href="#license">License</a></p>
+
+<p align="center">
+  <a href="https://godoc.org/pkg.re/essentialkaos/z7.v7"><img src="https://godoc.org/pkg.re/essentialkaos/z7.v7?status.svg"></a>
+  <a href="https://goreportcard.com/report/github.com/essentialkaos/z7"><img src="https://goreportcard.com/badge/github.com/essentialkaos/z7"></a>
+  <a href="https://codebeat.co/projects/github-com-essentialkaos-z7"><img alt="codebeat badge" src="https://codebeat.co/badges/7d5b1210-a853-4d1d-a34a-4afcf574861e" /></a>
+  <a href="https://essentialkaos.com/ekol"><img src="https://gh.kaos.st/ekol.svg"></a>
+</p>
 
 `z7` package provides methods for working with 7z archives (`p7zip` wrapper).
 
@@ -10,7 +19,7 @@ Before the initial install allows git to use redirects for [pkg.re](https://gith
 git config --global http.https://pkg.re.followRedirects true
 ```
 
-Make sure you have a working Go 1.7+ workspace ([instructions](https://golang.org/doc/install)), then:
+Make sure you have a working Go 1.7+ workspace (_[instructions](https://golang.org/doc/install)_), then:
 
 ```
 go get pkg.re/essentialkaos/z7.v7
