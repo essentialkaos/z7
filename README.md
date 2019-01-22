@@ -19,7 +19,7 @@ Before the initial install allows git to use redirects for [pkg.re](https://gith
 git config --global http.https://pkg.re.followRedirects true
 ```
 
-Make sure you have a working Go 1.7+ workspace (_[instructions](https://golang.org/doc/install)_), then:
+Make sure you have a working Go 1.8+ workspace (_[instructions](https://golang.org/doc/install)_), then:
 
 ```
 go get pkg.re/essentialkaos/z7.v7
@@ -33,7 +33,7 @@ go get -u pkg.re/essentialkaos/z7.v7
 
 ### Compatibility and OS support
 
-|      Version |      1.x |    2.x  | 3.x-7.x |
+|      Version |      1.x |    2.x  | 3.x-8.x |
 |--------------|----------|---------|---------|
 |  `p7zip 9.x` |    Full  | Partial | Partial |
 | `p7zip 15.x` |  Partial |    Full |    Full |
