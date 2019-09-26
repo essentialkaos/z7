@@ -16,8 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"pkg.re/essentialkaos/ek.v10/fsutil"
-	"pkg.re/essentialkaos/ek.v10/mathutil"
+	"pkg.re/essentialkaos/ek.v11/fsutil"
+	"pkg.re/essentialkaos/ek.v11/mathutil"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -187,7 +187,7 @@ func Check(props Props) (bool, error) {
 		}
 	}
 
-	return false, errors.New("Can't parse p7zip output")
+	return false, errors.New("Can't parse 7zip output")
 }
 
 // Delete remove files from archive
